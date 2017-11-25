@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Definitorium",
-  "version": "0.5",
+  "version": "0.7",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -11,9 +11,10 @@
   "background": {
     "scripts": ["background.js"]
   },
+  "permissions": ["tabs"],
   "browser_action": {
     "default_icon" : "assets/definitorium_icon.png",
     "default_title": "Definitions will be here",
-    "default_popup": "popup.html"
+    "default_popup": "popup/popup.html"
   }
 }
