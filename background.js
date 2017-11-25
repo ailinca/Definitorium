@@ -1,10 +1,9 @@
 console.log('Logging from the background script!');
+window.wordToSearch = 'defaultWord';
 
-chrome.browserAction.onClicked.addListener(buttonClicked);
+const messageReceived = (message, sender, sendResponse) => {
+    wordToSearch = message.text;
+};
 
-function buttonClicked(tab) {
-    const message = {
-        text: "Hello World!"
-    };
-    chrome.tabs.sendMessage(tab.id,message);
-}
+// handle message sent from the content script
+chrome.runtime.onMessage.addListener(messageReceived);
