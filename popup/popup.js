@@ -64,6 +64,3 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log('Fetch Error :-S', err);
         });
 });
-
-
-
