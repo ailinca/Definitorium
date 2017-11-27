@@ -1,0 +1,17 @@
+body {
+    width: 400px;
+    color: #777;
+    font-size: 1.1em;
+    font-style: italic;
+    background-color: #f0f0f0;
+}
+
+h2 {
+    text-align: center;
+}
+
+blockquote {
+    border-left: 15px solid #fdbc20;
+    margin-left:inherit;
+    padding-left: 25px;
+}
