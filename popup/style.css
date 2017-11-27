@@ -15,3 +15,13 @@ blockquote {
     margin-left:inherit;
     padding-left: 25px;
 }
+
+#error-message {
+    color: aliceblue;
+    background: #fdbc20;
+    padding: 10px !important;
+    border-radius: 10px !important;
+    position: relative;
+    display: none;
+    box-shadow: 1px 1px 1px #aaaaaa;
+    margin-top: 10px;}
