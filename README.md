@@ -10,9 +10,12 @@ But that doesn't always work.
 
 For those kind of moments, there is **Definitorium**.
 
-**Definitorium** is a Chrome extension, soon to be available in the [Chrome Extension Store](https://chrome.google.com/webstore/category/extensions), which gives you the  definition you need for that stubborn word you stooped at, without you leaving the page or doing any kind of spiritual incantation. 
+**Definitorium** is a Chrome extension, soon to be available in the [Chrome Extension Store](https://chrome.google.com/webstore/category/extensions), which gives you the  definition you need for that stubborn word you stopped at, without you leaving the page or doing any kind of spiritual incantation. 
 
-All you have to do is select the word and then click the **Definitorium** icon and that's it! You have your definition right there ! Hurray ! 
+All you have to do is select the word and then click the **Definitorium** icon and that's it! You have your definition right there !
+ 
+
+Hurray ! 
 
 
 ### Details ### 
