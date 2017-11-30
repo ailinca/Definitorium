@@ -15,8 +15,11 @@ const ERROR_MESSAGES = {
 document.addEventListener("DOMContentLoaded", () => {
 
     // get needed DOM elements
-    const userInput = document.getElementById('user-input');
+    const userDefinition = document.getElementById('user-definition');
     const errorMessage = document.getElementById('error-message');
+    const canonicalDefinitionIntro = document.getElementById('canonical-definition-intro');
+    const canonicalDefinition = document.getElementById('canonical-definition');
+
 
     // instantiate helper functions
     const clearError = () => {
@@ -35,10 +38,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const createUrl = ({wordToSearch = 'placeholder', endpoint = API_ENDPOINTS.DEFINITIONS, useCanonical = true}) =>
         BASE_URL + wordToSearch + endpoint + fetchParams({useCanonical:useCanonical});
 
+
     // Obtain the selected word as a global variable of the background page and set it in the DOM TODO: change this!!!
     let backgroundPage = chrome.extension.getBackgroundPage();
     let word = backgroundPage.wordToSearch;
-    userInput.innerHTML = word;
+    userDefinition.innerHTML = word;
 
 
     let urlWithCanonical = createUrl({wordToSearch: word});
@@ -64,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if(responseCanonical.word.toLowerCase() === word.toLowerCase()) {
 
                             // just display the definition obtained
-                            userInput.innerHTML += ' = ' + responseCanonical.text;
+                            userDefinition.innerHTML += ' = ' + responseCanonical.text;
                         } else {
 
                             // request the definition for the original word
@@ -72,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 .then(response => {
                                     if (response.status !== 200) {
                                         // if this call didn't succeed just display the canonical definition but don't show any error message to the user
-                                        userInput.innerHTML += ' = ' + responseCanonical.text;
+                                        userDefinition.innerHTML += ' = ' + responseCanonical.text;
                                         console.warn(`${ERROR_MESSAGES.SERVER_ERROR} Status Code: ${response.status}`);
                                         return;
                                     }
@@ -84,17 +88,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                                 console.log(`Literal definition is ${responseNonCanonical.text}`);
 
                                                 // append this definition to the DOM first
-                                                userInput.innerHTML += ' = ' + responseNonCanonical.text;
+                                                userDefinition.innerHTML += ' = ' + responseNonCanonical.text;
 
                                                 // add a specific message to indicate that there might be a better definition available
-                                                userInput.innerHTML += `
-                                                
-                                                You also might be interested in knowing the definition for "${responseCanonical.word}". We gottcha' covered!
-                                                
-                                                `;
+                                                canonicalDefinitionIntro.innerHTML += `You also might be interested in knowing the definition for "${responseCanonical.word}". We gottcha' covered!`;
 
                                                 // add the canonical word and it's definition
-                                                userInput.innerHTML += `${responseCanonical.word} = ${responseCanonical.text}`;
+                                                canonicalDefinition.innerHTML += `${responseCanonical.word} = ${responseCanonical.text}`;
                                             } else {
                                                 // again, don't let the user know we don't have a definition for him, just log to the console
                                                 console.warn(`${ERROR_MESSAGES.NOT_FOUND}"${word}"`);
