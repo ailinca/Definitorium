@@ -12,14 +12,19 @@ const ERROR_MESSAGES = {
 };
 
 
+const initialize = () => {
+    return {
+        userDefinition : document.getElementById('user-definition'),
+        errorMessage : document.getElementById('error-message'),
+        canonicalDefinitionIntro : document.getElementById('canonical-definition-intro'),
+        canonicalDefinition : document.getElementById('canonical-definition')
+    }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
 
     // get needed DOM elements
-    const userDefinition = document.getElementById('user-definition');
-    const errorMessage = document.getElementById('error-message');
-    const canonicalDefinitionIntro = document.getElementById('canonical-definition-intro');
-    const canonicalDefinition = document.getElementById('canonical-definition');
-
+    const {userDefinition, errorMessage, canonicalDefinitionIntro, canonicalDefinition} = initialize();
 
     // instantiate helper functions
     const clearError = () => {
