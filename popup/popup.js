@@ -1,9 +1,11 @@
 console.log('logging from the popup console!!');
 
-const API_KEY = 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5';
-const BASE_URL = 'http://api.wordnik.com:80/v4/word.json/';
-const API_ENDPOINTS = {
-    DEFINITIONS: '/definitions'
+const API = {
+    KEY : 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
+    BASE_URL: 'http://api.wordnik.com:80/v4/word.json/',
+    ENDPOINTS: {
+        DEFINITIONS: '/definitions'
+    }
 };
 
 const ERROR_MESSAGES = {
@@ -40,17 +42,17 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const fetchParams = ({limit = 1, includeRelated = false, useCanonical = true, includeTags = false}) =>
-        `?limit=${limit}&includeRelated=${includeRelated}&useCanonical=${useCanonical}&includeTags=${includeTags}&api_key=${API_KEY}`;
+        `?limit=${limit}&includeRelated=${includeRelated}&useCanonical=${useCanonical}&includeTags=${includeTags}&api_key=${API.KEY}`;
 
-    const createUrl = ({wordToSearch = 'placeholder', endpoint = API_ENDPOINTS.DEFINITIONS, params = {useCanonical: true}}) =>
-        BASE_URL + wordToSearch + endpoint + fetchParams(params);
+    const createUrl = ({wordToSearch = 'placeholder', endpoint = API.ENDPOINTS.DEFINITIONS, params = {useCanonical: true}}) =>
+        API.BASE_URL + wordToSearch + endpoint + fetchParams(params);
 
     const displayDefinition = (selector, def, index) => {
         selector.innerHTML += ` ${index}. ${def} \n`;
     };
 
     const getOriginalDefinition = (word, responseCanonical= []) => {
-        let urlWithoutCanonical = createUrl({wordToSearch: word, params: {useCanonical: false, limit: 3}});
+        let urlWithoutCanonical = createUrl({wordToSearch: word, params: {useCanonical: false, limit: LIMIT_MAX}});
         fetch(urlWithoutCanonical)
             .then(response => {
                 if (response.status !== 200) {
