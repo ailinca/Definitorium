@@ -11,6 +11,8 @@ const ERROR_MESSAGES = {
     NOT_FOUND: 'Oooops, it appears that our dictionary does not have a definition for '
 };
 
+const LIMIT_MAX = 3;
+
 
 const initialize = () => {
     return {
@@ -40,16 +42,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const fetchParams = ({limit = 1, includeRelated = false, useCanonical = true, includeTags = false}) =>
         `?limit=${limit}&includeRelated=${includeRelated}&useCanonical=${useCanonical}&includeTags=${includeTags}&api_key=${API_KEY}`;
 
-    const createUrl = ({wordToSearch = 'placeholder', endpoint = API_ENDPOINTS.DEFINITIONS, useCanonical = true}) =>
-        BASE_URL + wordToSearch + endpoint + fetchParams({useCanonical:useCanonical});
+    const createUrl = ({wordToSearch = 'placeholder', endpoint = API_ENDPOINTS.DEFINITIONS, params = {useCanonical: true}}) =>
+        BASE_URL + wordToSearch + endpoint + fetchParams(params);
 
-    const getOriginalDefinition = (word, responseCanonical={}) => {
-        let urlWithoutCanonical = createUrl({wordToSearch: word,useCanonical: false});
+    const displayDefinition = (selector, def, index) => {
+        selector.innerHTML += ` ${index}. ${def} \n`;
+    };
+
+    const getOriginalDefinition = (word, responseCanonical= []) => {
+        let urlWithoutCanonical = createUrl({wordToSearch: word, params: {useCanonical: false, limit: 3}});
         fetch(urlWithoutCanonical)
             .then(response => {
                 if (response.status !== 200) {
                     // if this call didn't succeed just display the canonical definition but don't show any error message to the user
-                    userDefinition.innerHTML += ' = ' + responseCanonical.text;
+                    userDefinition.innerHTML += ' = ' + responseCanonical[0].text;
                     console.warn(`${ERROR_MESSAGES.SERVER_ERROR} Status Code: ${response.status}`);
                     return;
                 }
@@ -61,13 +67,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             console.log(`Literal definition is ${responseNonCanonical.text}`);
 
                             // append this definition to the DOM first
-                            userDefinition.innerHTML += ' = ' + responseNonCanonical.text;
+                            userDefinition.innerHTML += responseNonCanonical.text;
 
                             // add a specific message to indicate that there might be a better definition available
-                            canonicalDefinitionIntro.innerHTML += `You also might be interested in knowing the definition for "${responseCanonical.word}". Here ya go:`;
+                            canonicalDefinitionIntro.innerHTML += `You also might be interested in knowing the definition for "${responseCanonical[0].word}". Here ya go:`;
 
-                            // add the canonical word and it's definition
-                            canonicalDefinition.innerHTML += `${responseCanonical.word} = ${responseCanonical.text}`;
+                            // add the canonical word and ALL it's definitions
+                            canonicalDefinition.innerHTML += `${responseCanonical[0].word} =`;
+                            responseCanonical.map((resp,index) => displayDefinition(canonicalDefinition, resp.text, index+1));
                         } else {
                             // again, don't let the user know we don't have a definition for him, just log to the console
                             console.warn(`${ERROR_MESSAGES.NOT_FOUND}"${word}"`);
@@ -80,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const getCanonicalDefinition = (word) => {
-        const urlWithCanonical = createUrl({wordToSearch: word});
+        const urlWithCanonical = createUrl({wordToSearch: word, params:{useCanonical: true, limit: LIMIT_MAX}});
         fetch(urlWithCanonical)
             .then(response => {
                 if (response.status !== 200) {
@@ -99,11 +106,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             // check if the definition returned is for the same word or a derived one
                             if(responseCanonical.word.toLowerCase() === word.toLowerCase()) {
 
-                                // just display the definition obtained
-                                userDefinition.innerHTML += ' = ' + responseCanonical.text;
+                                // just display ALL definitions obtained
+                                data.map((resp, index) => displayDefinition(userDefinition, resp.text, index+1));
                             } else {
                                 // request the definition for the original word
-                                getOriginalDefinition(word, responseCanonical);
+                                getOriginalDefinition(word, data);
                             }
 
                         } else {
@@ -120,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Obtain the selected word as a global variable of the background page and set it in the DOM TODO: change this!!!
     let backgroundPage = chrome.extension.getBackgroundPage();
     let word = backgroundPage.wordToSearch;
-    userDefinition.innerHTML = word;
+    userDefinition.innerHTML = word + ' =';
 
     clearError();
     getCanonicalDefinition(word);
