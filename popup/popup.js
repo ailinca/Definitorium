@@ -55,7 +55,11 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(response => {
                 if (response.status !== 200) {
                     // if this call didn't succeed just display the canonical definition but don't show any error message to the user
-                    userDefinition.innerHTML += ' = ' + responseCanonical[0].text;
+                    if(responseCanonical.length) {
+                        userDefinition.innerHTML += responseCanonical[0].text;
+                    } else {
+                        showError(ERROR_MESSAGES.SERVER_ERROR);
+                    }
                     console.warn(`${ERROR_MESSAGES.SERVER_ERROR} Status Code: ${response.status}`);
                     return;
                 }
@@ -69,12 +73,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             // append this definition to the DOM first
                             userDefinition.innerHTML += responseNonCanonical.text;
 
-                            // add a specific message to indicate that there might be a better definition available
-                            canonicalDefinitionIntro.innerHTML += `You also might be interested in knowing the definition for "${responseCanonical[0].word}". Here ya go:`;
+                            if(responseCanonical.length) {
+                                // add a specific message to indicate that there might be a more useful definition available
+                                canonicalDefinitionIntro.innerHTML += `You also might be interested in knowing the definition for "${responseCanonical[0].word}". Here ya go:`;
 
-                            // add the canonical word and ALL it's definitions
-                            canonicalDefinition.innerHTML += `${responseCanonical[0].word} =`;
-                            responseCanonical.map((resp,index) => displayDefinition(canonicalDefinition, resp.text, index+1));
+                                // add the canonical word and ALL it's definitions
+                                canonicalDefinition.innerHTML += `${responseCanonical[0].word} =`;
+                                responseCanonical.map((resp,index) => displayDefinition(canonicalDefinition, resp.text, index+1));
+                            }
                         } else {
                             // again, don't let the user know we don't have a definition for him, just log to the console
                             console.warn(`${ERROR_MESSAGES.NOT_FOUND}"${word}"`);
