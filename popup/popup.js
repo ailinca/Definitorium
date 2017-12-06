@@ -45,8 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMessage.style.display = 'inline-block';
     };
 
-    const fetchParams = ({limit = 1, includeRelated = false, useCanonical = true, includeTags = false}) =>
-        `?limit=${limit}&includeRelated=${includeRelated}&useCanonical=${useCanonical}&includeTags=${includeTags}&api_key=${API.KEY}`;
+    // TODO: refactor fetchParams to iterate through param keys and dynamically append values to string
+    const fetchParams = ({limit = 1, includeRelated = false, useCanonical = true, includeTags = false, relationshipTypes = "synonym"}) =>
+        `?limit=${limit}&includeRelated=${includeRelated}&useCanonical=${useCanonical}&includeTags=${includeTags}&relationshipTypes=${relationshipTypes}&api_key=${API.KEY}`;
 
     const createUrl = ({wordToSearch = 'placeholder', endpoint = API.ENDPOINTS.DEFINITIONS, params = {useCanonical: true}}) =>
         API.BASE_URL + wordToSearch + endpoint + fetchParams(params);
