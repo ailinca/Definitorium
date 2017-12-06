@@ -4,13 +4,15 @@ const API = {
     KEY : 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
     BASE_URL: 'http://api.wordnik.com:80/v4/word.json/',
     ENDPOINTS: {
-        DEFINITIONS: '/definitions'
+        DEFINITIONS: '/definitions',
+        RELATED_WORDS: '/relatedWords'
     }
 };
 
 const ERROR_MESSAGES = {
     SERVER_ERROR : 'Ooops, looks like there was a problem fetching a definition. Please try again later!',
-    NOT_FOUND: 'Oooops, it appears that our dictionary does not have a definition for '
+    DEFINITIONS_NOT_FOUND: 'Oooops, it appears that our dictionary does not have a definition for ',
+    SYNONYMS_NOT_FOUND: 'We did not find any synonym for your word and for that we are really sorry. Here is a cookie!'
 };
 
 const LIMIT_MAX = 3;
@@ -21,14 +23,16 @@ const initialize = () => {
         userDefinition : document.getElementById('user-definition'),
         errorMessage : document.getElementById('error-message'),
         canonicalDefinitionIntro : document.getElementById('canonical-definition-intro'),
-        canonicalDefinition : document.getElementById('canonical-definition')
+        canonicalDefinition : document.getElementById('canonical-definition'),
+        synonymsIntro: document.getElementById('synonyms-intro'),
+        synonymsElement: document.getElementById('synonyms')
     }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
 
     // get needed DOM elements
-    const {userDefinition, errorMessage, canonicalDefinitionIntro, canonicalDefinition} = initialize();
+    const {userDefinition, errorMessage, canonicalDefinitionIntro, canonicalDefinition, synonymsIntro, synonymsElement} = initialize();
 
     // instantiate helper functions
     const clearError = () => {
@@ -85,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                         } else {
                             // again, don't let the user know we don't have a definition for him, just log to the console
-                            console.warn(`${ERROR_MESSAGES.NOT_FOUND}"${word}"`);
+                            console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
                         }
                     });
             })
@@ -122,8 +126,39 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
 
                         } else {
-                            console.warn(`${ERROR_MESSAGES.NOT_FOUND}"${word}"`);
-                            showError(`${ERROR_MESSAGES.NOT_FOUND}"${word}"`);
+                            console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
+                            showError(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
+                        }
+                    });
+            })
+            .catch(err => {
+                console.log('Fetch Error :-S', err);
+            });
+    };
+
+    const getSynonyms = (word) => {
+        const url = createUrl({wordToSearch: word, endpoint: API.ENDPOINTS.RELATED_WORDS, params: {useCanonical:true, limit: LIMIT_MAX} });
+        fetch(url)
+            .then(response => {
+                if (response.status !== 200) {
+                    console.warn(`${ERROR_MESSAGES.SERVER_ERROR} Status Code: ${response.status}`);
+                    showError(ERROR_MESSAGES.SERVER_ERROR);
+                    return;
+                }
+
+                response.json()
+                    .then(data => {
+                        if (data.length && data[0].words.length) {
+                            const synonyms = data[0].words;
+                            console.log(`Synonyms for the canonical form of ${word} are:`);
+                            console.log(synonyms);
+
+                            synonymsIntro.innerHTML = "Synonyms:";
+                            synonyms.map(syn => synonymsElement.innerHTML += `${syn}, `);
+
+                        } else {
+                            console.warn(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}"${word}"`);
+                            // showError(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}`);
                         }
                     });
             })
@@ -135,8 +170,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Obtain the selected word as a global variable of the background page and set it in the DOM TODO: change this!!!
     let backgroundPage = chrome.extension.getBackgroundPage();
     let word = backgroundPage.wordToSearch;
-    userDefinition.innerHTML = word + ' =';
+    userDefinition.innerHTML = word + ' = ';
 
     clearError();
     getCanonicalDefinition(word);
+    getSynonyms(word);
 });
