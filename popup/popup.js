@@ -1,7 +1,7 @@
 console.log('logging from the popup console!!');
 
 const API = {
-    KEY : 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
+    KEY: 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
     BASE_URL: 'http://api.wordnik.com:80/v4/word.json/',
     ENDPOINTS: {
         DEFINITIONS: '/definitions',
@@ -10,20 +10,22 @@ const API = {
 };
 
 const ERROR_MESSAGES = {
-    SERVER_ERROR : 'Ooops, looks like there was a problem fetching a definition. Please try again later!',
+
+    SERVER_ERROR: 'Ooops, looks like there was a problem with our server. Please try again later!',
     DEFINITIONS_NOT_FOUND: 'Oooops, it appears that our dictionary does not have a definition for ',
     SYNONYMS_NOT_FOUND: 'We did not find any synonym for your word and for that we are really sorry. Here is a cookie!'
 };
 
-const LIMIT_MAX = 3;
+const DEFINITIONS_LIMIT = 3;
+const SYNONYMS_LIMIT = 10;
 
 
 const initialize = () => {
     return {
-        userDefinition : document.getElementById('user-definition'),
-        errorMessage : document.getElementById('error-message'),
-        canonicalDefinitionIntro : document.getElementById('canonical-definition-intro'),
-        canonicalDefinition : document.getElementById('canonical-definition'),
+        userDefinition: document.getElementById('user-definition'),
+        errorMessage: document.getElementById('error-message'),
+        canonicalDefinitionIntro: document.getElementById('canonical-definition-intro'),
+        canonicalDefinition: document.getElementById('canonical-definition'),
         synonymsIntro: document.getElementById('synonyms-intro'),
         synonymsElement: document.getElementById('synonyms')
     }
@@ -45,24 +47,42 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMessage.style.display = 'inline-block';
     };
 
-    // TODO: refactor fetchParams to iterate through param keys and dynamically append values to string
-    const fetchParams = ({limit = 1, includeRelated = false, useCanonical = true, includeTags = false, relationshipTypes = "synonym"}) =>
-        `?limit=${limit}&includeRelated=${includeRelated}&useCanonical=${useCanonical}&includeTags=${includeTags}&relationshipTypes=${relationshipTypes}&api_key=${API.KEY}`;
+    const fetchParams = function (params) {
+        let toReturn = '?';
+        for ([k, v] of Object.entries(Array.from(arguments)[0])) {
+            toReturn += `${k}=${v}&`
 
-    const createUrl = ({wordToSearch = 'placeholder', endpoint = API.ENDPOINTS.DEFINITIONS, params = {useCanonical: true}}) =>
-        API.BASE_URL + wordToSearch + endpoint + fetchParams(params);
+        }
+        return toReturn;
+    };
+
+    const createUrl = ({wordToSearch = 'placeholder', endpoint = API.ENDPOINTS.DEFINITIONS, params = {}}) =>
+        encodeURI(API.BASE_URL + wordToSearch + endpoint + fetchParams(params));
 
     const displayDefinition = (selector, def, index) => {
         selector.innerHTML += ` ${index}. ${def} \n`;
     };
 
-    const getOriginalDefinition = (word, responseCanonical= []) => {
-        let urlWithoutCanonical = createUrl({wordToSearch: word, params: {useCanonical: false, limit: LIMIT_MAX}});
+
+    const getOriginalDefinition = (word, responseCanonical = []) => {
+        const fetchParams = {
+            useCanonical: false,
+            limit: DEFINITIONS_LIMIT,
+            includeRelated: false,
+            includeTags: false,
+            api_key: API.KEY
+        };
+        const urlWithoutCanonical = createUrl({
+            wordToSearch: word,
+            endpoint: API.ENDPOINTS.DEFINITIONS,
+            params: fetchParams
+        });
+
         fetch(urlWithoutCanonical)
             .then(response => {
                 if (response.status !== 200) {
                     // if this call didn't succeed just display the canonical definition but don't show any error message to the user
-                    if(responseCanonical.length) {
+                    if (responseCanonical.length) {
                         userDefinition.innerHTML += responseCanonical[0].text;
                     } else {
                         showError(ERROR_MESSAGES.SERVER_ERROR);
@@ -73,20 +93,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 response.json()
                     .then(data => {
                         console.log(data);
-                        if(data.length) {
+                        if (data.length) {
                             const responseNonCanonical = data[0];
                             console.log(`Literal definition is ${responseNonCanonical.text}`);
 
                             // append this definition to the DOM first
                             userDefinition.innerHTML += responseNonCanonical.text;
 
-                            if(responseCanonical.length) {
+                            if (responseCanonical.length) {
                                 // add a specific message to indicate that there might be a more useful definition available
                                 canonicalDefinitionIntro.innerHTML += `You also might be interested in knowing the definition for "${responseCanonical[0].word}". Here ya go:`;
 
                                 // add the canonical word and ALL it's definitions
                                 canonicalDefinition.innerHTML += `${responseCanonical[0].word} =`;
-                                responseCanonical.map((resp,index) => displayDefinition(canonicalDefinition, resp.text, index+1));
+                                responseCanonical.map((resp, index) => displayDefinition(canonicalDefinition, resp.text, index + 1));
                             }
                         } else {
                             // again, don't let the user know we don't have a definition for him, just log to the console
@@ -100,7 +120,19 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const getCanonicalDefinition = (word) => {
-        const urlWithCanonical = createUrl({wordToSearch: word, params:{useCanonical: true, limit: LIMIT_MAX}});
+        const fetchParams = {
+            useCanonical: true,
+            limit: DEFINITIONS_LIMIT,
+            includeRelated: false,
+            includeTags: false,
+            api_key: API.KEY
+        };
+        const urlWithCanonical = createUrl({
+            wordToSearch: word,
+            endpoint: API.ENDPOINTS.DEFINITIONS,
+            params: fetchParams
+        });
+
         fetch(urlWithCanonical)
             .then(response => {
                 if (response.status !== 200) {
@@ -117,10 +149,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             console.log(`Canonical definition is:${responseCanonical.text}`);
 
                             // check if the definition returned is for the same word or a derived one
-                            if(responseCanonical.word.toLowerCase() === word.toLowerCase()) {
+                            if (responseCanonical.word.toLowerCase() === word.toLowerCase()) {
 
                                 // just display ALL definitions obtained
-                                data.map((resp, index) => displayDefinition(userDefinition, resp.text, index+1));
+                                data.map((resp, index) => displayDefinition(userDefinition, resp.text, index + 1));
                             } else {
                                 // request the definition for the original word
                                 getOriginalDefinition(word, data);
@@ -138,7 +170,15 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const getSynonyms = (word) => {
-        const url = createUrl({wordToSearch: word, endpoint: API.ENDPOINTS.RELATED_WORDS, params: {useCanonical:true, limit: LIMIT_MAX} });
+        const fetchParams = {
+            useCanonical: true,
+            limitPerRelationshipType: SYNONYMS_LIMIT,
+            includeTags: true,
+            relationshipTypes: "synonym",
+            api_key: API.KEY
+        };
+        const url = createUrl({wordToSearch: word, endpoint: API.ENDPOINTS.RELATED_WORDS, params: fetchParams});
+        console.log('URL for getting synonyms: ' + url);
         fetch(url)
             .then(response => {
                 if (response.status !== 200) {
@@ -149,6 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 response.json()
                     .then(data => {
+                        console.log(data);
                         if (data.length && data[0].words.length) {
                             const synonyms = data[0].words;
                             console.log(`Synonyms for the canonical form of ${word} are:`);
@@ -159,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         } else {
                             console.warn(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}"${word}"`);
-                            // showError(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}`);
+                            showError(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}`);
                         }
                     });
             })
