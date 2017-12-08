@@ -26,5 +26,4 @@ The extension uses the [Wordnik API](http://developer.wordnik.com/docs.html) to 
 ### TODO ###
 
 *   display spinner while loading
-*   get word synonyms
 *   let the user manually change the word
