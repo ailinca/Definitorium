@@ -72,8 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const fetchParams = function (params) {
         let toReturn = '?';
         for ([k, v] of Object.entries(Array.from(arguments)[0])) {
-            toReturn += `${k}=${v}&`
-
+            toReturn += `${k}=${v}&`;
         }
         return toReturn;
     };
@@ -81,12 +80,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const createUrl = ({wordToSearch = 'placeholder', endpoint = API.ENDPOINTS.DEFINITIONS, params = {}}) =>
         encodeURI(API.BASE_URL + wordToSearch + endpoint + fetchParams(params));
 
-    const displayDefinition = (selector, def, index) => {
+    const appendDefinition = (selector, def, index) => {
         selector.innerHTML += ` ${index}. ${def} \n`;
     };
 
     const handleFetchError = err => console.log('Fetch Error :-S', err);
 
+    // add a specific message to indicate that there might be a more useful definition available
+    const displayCanonicalDefinitionIntro = (word) => {
+        canonicalDefinitionIntro.innerHTML += `You also might be interested in knowing the definition for "${word}". Here ya go:`;
+    };
+
+    // add the canonical word and ALL it's definitions
+    const displayCanonicalDefinition = (response) => {
+        console.log(`Canonical definition is:${response[0].text}`);
+        canonicalDefinition.innerHTML += `${response[0].word} =`;
+        response.map((resp, index) => appendDefinition(canonicalDefinition, resp.text, index + 1));
+    };
+
+    // display the definitions for the exact word selected by the user
+    const displayOriginalDefinition = (response) => {
+        console.log(`Literal definition is ${response[0].text}`);
+        userDefinition.innerHTML += `${response[0].word} =`;
+        response.map((resp, index) => appendDefinition(userDefinition, resp.text, index + 1));
+    };
 
     const getOriginalDefinition = (word, responseCanonical = []) => {
         const fetchParams = {
@@ -107,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (response.status !== 200) {
                     // if this call didn't succeed just display the canonical definition but don't show any error message to the user
                     if (responseCanonical.length) {
-                        userDefinition.innerHTML += responseCanonical[0].text;
+                        displayCanonicalDefinition(responseCanonical);
                     } else {
                         showError(ERROR_MESSAGES.SERVER_ERROR);
                     }
@@ -118,22 +135,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     .then(data => {
                         console.log(data);
                         if (data.length) {
-                            const responseNonCanonical = data[0];
-                            console.log(`Literal definition is ${responseNonCanonical.text}`);
-
-                            // append this definition to the DOM first
-                            userDefinition.innerHTML += responseNonCanonical.text;
-
+                            displayOriginalDefinition(data);
                             if (responseCanonical.length) {
-                                // add a specific message to indicate that there might be a more useful definition available
-                                canonicalDefinitionIntro.innerHTML += `You also might be interested in knowing the definition for "${responseCanonical[0].word}". Here ya go:`;
-
-                                // add the canonical word and ALL it's definitions
-                                canonicalDefinition.innerHTML += `${responseCanonical[0].word} =`;
-                                responseCanonical.map((resp, index) => displayDefinition(canonicalDefinition, resp.text, index + 1));
+                                displayCanonicalDefinitionIntro(responseCanonical[0].word);
+                                displayCanonicalDefinition(responseCanonical);
                             }
                         } else {
                             // again, don't let the user know we don't have a definition for him, just log to the console and display the canonical definition
+                            displayCanonicalDefinition(responseCanonical);
                             console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
                         }
                     });
@@ -155,8 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
             params: fetchParams
         });
 
-        userDefinition.innerHTML = word + ' = ';
-
         fetch(urlWithCanonical)
             .then(response => {
                 if (response.status !== 200) {
@@ -169,17 +176,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     .then(data => {
                         console.log(data);
                         if (data.length) {
-                            const responseCanonical = data[0];
-                            console.log(`Canonical definition is:${responseCanonical.text}`);
-
                             // check if the definition returned is for the same word or a derived one
-                            if (responseCanonical.word.toLowerCase() === word.toLowerCase()) {
-
-                                // just display ALL definitions obtained
-                                data.map((resp, index) => displayDefinition(userDefinition, resp.text, index + 1));
+                            if (data[0].word.toLowerCase() === word.toLowerCase()) {
+                                displayCanonicalDefinition(data)
                             } else {
-                                console.log('OBS: the word is not in the canonical form: ' + responseCanonical.word.toLowerCase() +' != '+ word.toLowerCase());
-                                // request the definition for the original word
                                 getOriginalDefinition(word, data);
                             }
 
