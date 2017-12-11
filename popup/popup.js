@@ -1,5 +1,8 @@
 console.log('logging from the popup console!!');
 
+//global variable
+let word = "placeholder";
+
 const API = {
     KEY: 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
     BASE_URL: 'http://api.wordnik.com:80/v4/word.json/',
@@ -10,7 +13,6 @@ const API = {
 };
 
 const ERROR_MESSAGES = {
-
     SERVER_ERROR: 'Ooops, looks like there was a problem with our server. Please try again later!',
     DEFINITIONS_NOT_FOUND: 'Oooops, it appears that our dictionary does not have a definition for ',
     SYNONYMS_NOT_FOUND: 'We did not find any synonym for your word and for that we are really sorry. Here is a cookie!'
@@ -33,6 +35,16 @@ const initialize = () => {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    // tell the background script the popup is ready to receive the word selected by the user
+    chrome.runtime.sendMessage({text: "popupReady"}, response => {
+        console.log(response);
+        word = response.text;
+        clearPopup();
+        getCanonicalDefinition(word);
+        getSynonyms(word);
+    });
+
+
     // get needed DOM elements
     const {userDefinition, errorMessage, canonicalDefinitionIntro, canonicalDefinition, synonymsIntro, synonymsElement} = initialize();
 
@@ -40,6 +52,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const clearError = () => {
         errorMessage.innerHTML = '';
         errorMessage.style.display = 'none';
+    };
+
+    const clearPopup = () => {
+        userDefinition.innerHTML = '';
+        canonicalDefinitionIntro.innerHTML = '';
+        canonicalDefinition.innerHTML = '';
+        synonymsIntro.innerHTML = '';
+        synonymsElement.innerHTML = '';
+        clearError();
     };
 
     const showError = (error) => {
@@ -133,6 +154,8 @@ document.addEventListener("DOMContentLoaded", () => {
             params: fetchParams
         });
 
+        userDefinition.innerHTML = word + ' = ';
+
         fetch(urlWithCanonical)
             .then(response => {
                 if (response.status !== 200) {
@@ -208,13 +231,4 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log('Fetch Error :-S', err);
             });
     };
-
-    // Obtain the selected word as a global variable of the background page and set it in the DOM TODO: change this!!!
-    let backgroundPage = chrome.extension.getBackgroundPage();
-    let word = backgroundPage.wordToSearch;
-    userDefinition.innerHTML = word + ' = ';
-
-    clearError();
-    getCanonicalDefinition(word);
-    getSynonyms(word);
 });
