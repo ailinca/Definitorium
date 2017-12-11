@@ -3,6 +3,7 @@ console.log('logging from the popup console!!');
 //global variable
 let word = "placeholder";
 
+// constants area
 const API = {
     KEY: 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
     BASE_URL: 'http://api.wordnik.com:80/v4/word.json/',
@@ -35,7 +36,7 @@ const initialize = () => {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    // tell the background script the popup is ready to receive the word selected by the user
+    // tell the background script the popup is ready and get the word selected by the user
     chrome.runtime.sendMessage({text: "popupReady"}, response => {
         console.log(response);
         word = response.text;
@@ -84,6 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
         selector.innerHTML += ` ${index}. ${def} \n`;
     };
 
+    const handleFetchError = err => console.log('Fetch Error :-S', err);
+
 
     const getOriginalDefinition = (word, responseCanonical = []) => {
         const fetchParams = {
@@ -130,14 +133,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 responseCanonical.map((resp, index) => displayDefinition(canonicalDefinition, resp.text, index + 1));
                             }
                         } else {
-                            // again, don't let the user know we don't have a definition for him, just log to the console
+                            // again, don't let the user know we don't have a definition for him, just log to the console and display the canonical definition
                             console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
                         }
                     });
             })
-            .catch(err => {
-                console.log('Fetch Error :-S', err);
-            });
+            .catch(handleFetchError);
     };
 
     const getCanonicalDefinition = (word) => {
@@ -177,6 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 // just display ALL definitions obtained
                                 data.map((resp, index) => displayDefinition(userDefinition, resp.text, index + 1));
                             } else {
+                                console.log('OBS: the word is not in the canonical form: ' + responseCanonical.word.toLowerCase() +' != '+ word.toLowerCase());
                                 // request the definition for the original word
                                 getOriginalDefinition(word, data);
                             }
@@ -187,9 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
             })
-            .catch(err => {
-                console.log('Fetch Error :-S', err);
-            });
+            .catch(handleFetchError)
     };
 
     const getSynonyms = (word) => {
@@ -227,8 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
             })
-            .catch(err => {
-                console.log('Fetch Error :-S', err);
-            });
+            .catch(handleFetchError)
     };
 });
