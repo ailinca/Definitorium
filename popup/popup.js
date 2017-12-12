@@ -1,16 +1,19 @@
 console.log('logging from the popup console!!');
 
+//global variable
+let word = "placeholder";
+
+// constants area
 const API = {
     KEY: 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
-    BASE_URL: 'http://api.wordnik.com:80/v4/word.json/',
+    BASE_URL: 'http://api.wordnik.com:80/v4/word.json',
     ENDPOINTS: {
-        DEFINITIONS: '/definitions',
-        RELATED_WORDS: '/relatedWords'
+        DEFINITIONS: 'definitions',
+        RELATED_WORDS: 'relatedWords'
     }
 };
 
 const ERROR_MESSAGES = {
-
     SERVER_ERROR: 'Ooops, looks like there was a problem with our server. Please try again later!',
     DEFINITIONS_NOT_FOUND: 'Oooops, it appears that our dictionary does not have a definition for ',
     SYNONYMS_NOT_FOUND: 'We did not find any synonym for your word and for that we are really sorry. Here is a cookie!'
@@ -33,6 +36,16 @@ const initialize = () => {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    // tell the background script the popup is ready and get the word selected by the user
+    chrome.runtime.sendMessage({text: "popupReady"}, response => {
+        console.log(response);
+        word = response.text;
+        clearPopup();
+        getCanonicalDefinition(word);
+        getSynonyms(word);
+    });
+
+
     // get needed DOM elements
     const {userDefinition, errorMessage, canonicalDefinitionIntro, canonicalDefinition, synonymsIntro, synonymsElement} = initialize();
 
@@ -42,27 +55,55 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMessage.style.display = 'none';
     };
 
+    const clearPopup = () => {
+        userDefinition.innerHTML = '';
+        canonicalDefinitionIntro.innerHTML = '';
+        canonicalDefinition.innerHTML = '';
+        synonymsIntro.innerHTML = '';
+        synonymsElement.innerHTML = '';
+        clearError();
+    };
+
     const showError = (error) => {
         errorMessage.innerHTML = error;
         errorMessage.style.display = 'inline-block';
     };
 
     const fetchParams = function (params) {
-        let toReturn = '?';
+        let toReturn = '';
         for ([k, v] of Object.entries(Array.from(arguments)[0])) {
-            toReturn += `${k}=${v}&`
-
+            toReturn += `${k}=${v}&`;
         }
         return toReturn;
     };
 
     const createUrl = ({wordToSearch = 'placeholder', endpoint = API.ENDPOINTS.DEFINITIONS, params = {}}) =>
-        encodeURI(API.BASE_URL + wordToSearch + endpoint + fetchParams(params));
+        encodeURI(`${API.BASE_URL}/${wordToSearch}/${endpoint}?${fetchParams(params)}`);
 
-    const displayDefinition = (selector, def, index) => {
+    const appendDefinition = (selector, def, index) => {
         selector.innerHTML += ` ${index}. ${def} \n`;
     };
 
+    const handleFetchError = err => console.log('Fetch Error :-S', err);
+
+    // add a specific message to indicate that there might be a more useful definition available
+    const displayCanonicalDefinitionIntro = (word) => {
+        canonicalDefinitionIntro.innerHTML += `You also might be interested in knowing the definition for "${word}". Here ya go:`;
+    };
+
+    // add the canonical word and ALL it's definitions
+    const displayCanonicalDefinition = (response) => {
+        console.log(`Canonical definition is:${response[0].text}`);
+        canonicalDefinition.innerHTML += `${response[0].word} =`;
+        response.map((resp, index) => appendDefinition(canonicalDefinition, resp.text, index + 1));
+    };
+
+    // display the definitions for the exact word selected by the user
+    const displayOriginalDefinition = (response) => {
+        console.log(`Literal definition is ${response[0].text}`);
+        userDefinition.innerHTML += `${response[0].word} =`;
+        response.map((resp, index) => appendDefinition(userDefinition, resp.text, index + 1));
+    };
 
     const getOriginalDefinition = (word, responseCanonical = []) => {
         const fetchParams = {
@@ -83,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (response.status !== 200) {
                     // if this call didn't succeed just display the canonical definition but don't show any error message to the user
                     if (responseCanonical.length) {
-                        userDefinition.innerHTML += responseCanonical[0].text;
+                        displayCanonicalDefinition(responseCanonical);
                     } else {
                         showError(ERROR_MESSAGES.SERVER_ERROR);
                     }
@@ -94,29 +135,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     .then(data => {
                         console.log(data);
                         if (data.length) {
-                            const responseNonCanonical = data[0];
-                            console.log(`Literal definition is ${responseNonCanonical.text}`);
-
-                            // append this definition to the DOM first
-                            userDefinition.innerHTML += responseNonCanonical.text;
-
+                            displayOriginalDefinition(data);
                             if (responseCanonical.length) {
-                                // add a specific message to indicate that there might be a more useful definition available
-                                canonicalDefinitionIntro.innerHTML += `You also might be interested in knowing the definition for "${responseCanonical[0].word}". Here ya go:`;
-
-                                // add the canonical word and ALL it's definitions
-                                canonicalDefinition.innerHTML += `${responseCanonical[0].word} =`;
-                                responseCanonical.map((resp, index) => displayDefinition(canonicalDefinition, resp.text, index + 1));
+                                displayCanonicalDefinitionIntro(responseCanonical[0].word);
+                                displayCanonicalDefinition(responseCanonical);
                             }
                         } else {
-                            // again, don't let the user know we don't have a definition for him, just log to the console
+                            // again, don't let the user know we don't have a definition for him, just log to the console and display the canonical definition
+                            displayCanonicalDefinition(responseCanonical);
                             console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
                         }
                     });
             })
-            .catch(err => {
-                console.log('Fetch Error :-S', err);
-            });
+            .catch(handleFetchError);
     };
 
     const getCanonicalDefinition = (word) => {
@@ -145,16 +176,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     .then(data => {
                         console.log(data);
                         if (data.length) {
-                            const responseCanonical = data[0];
-                            console.log(`Canonical definition is:${responseCanonical.text}`);
-
                             // check if the definition returned is for the same word or a derived one
-                            if (responseCanonical.word.toLowerCase() === word.toLowerCase()) {
-
-                                // just display ALL definitions obtained
-                                data.map((resp, index) => displayDefinition(userDefinition, resp.text, index + 1));
+                            if (data[0].word.toLowerCase() === word.toLowerCase()) {
+                                displayCanonicalDefinition(data)
                             } else {
-                                // request the definition for the original word
                                 getOriginalDefinition(word, data);
                             }
 
@@ -164,9 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
             })
-            .catch(err => {
-                console.log('Fetch Error :-S', err);
-            });
+            .catch(handleFetchError)
     };
 
     const getSynonyms = (word) => {
@@ -204,17 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
             })
-            .catch(err => {
-                console.log('Fetch Error :-S', err);
-            });
+            .catch(handleFetchError)
     };
-
-    // Obtain the selected word as a global variable of the background page and set it in the DOM TODO: change this!!!
-    let backgroundPage = chrome.extension.getBackgroundPage();
-    let word = backgroundPage.wordToSearch;
-    userDefinition.innerHTML = word + ' = ';
-
-    clearError();
-    getCanonicalDefinition(word);
-    getSynonyms(word);
 });
