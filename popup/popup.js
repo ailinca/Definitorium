@@ -6,10 +6,10 @@ let word = "placeholder";
 // constants area
 const API = {
     KEY: 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
-    BASE_URL: 'http://api.wordnik.com:80/v4/word.json/',
+    BASE_URL: 'http://api.wordnik.com:80/v4/word.json',
     ENDPOINTS: {
-        DEFINITIONS: '/definitions',
-        RELATED_WORDS: '/relatedWords'
+        DEFINITIONS: 'definitions',
+        RELATED_WORDS: 'relatedWords'
     }
 };
 
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const fetchParams = function (params) {
-        let toReturn = '?';
+        let toReturn = '';
         for ([k, v] of Object.entries(Array.from(arguments)[0])) {
             toReturn += `${k}=${v}&`;
         }
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const createUrl = ({wordToSearch = 'placeholder', endpoint = API.ENDPOINTS.DEFINITIONS, params = {}}) =>
-        encodeURI(API.BASE_URL + wordToSearch + endpoint + fetchParams(params));
+        encodeURI(`${API.BASE_URL}/${wordToSearch}/${endpoint}?${fetchParams(params)}`);
 
     const appendDefinition = (selector, def, index) => {
         selector.innerHTML += ` ${index}. ${def} \n`;
