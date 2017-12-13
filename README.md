@@ -19,7 +19,7 @@ Hurray !
 
 ### Features ### 
 
-###### Recognising canonical form ######
+##### Recognising canonical form #####
 
 The extension detects if a word is in the canonical form or not and, in the second case, fetches definitions for both forms. 
 For example, if you select the word _requested_, you'll get:
@@ -30,15 +30,15 @@ For example, if you select the word _requested_, you'll get:
 
 ``request = 1. To express a desire for; ask for. Often used with an infinitive or clause: requested information about the experiment; requested to see the evidence firsthand; requested that the bus driver stop at the next corner. 2. To ask (a person) to do something: The police requested her to accompany them. 3. The act of asking.``  
 
-###### Multiple definitions
+##### Multiple definitions #####
 
 As you probably noticed above, for the canonical form of the word, the user gets multiple definitions, gathered from a multiple dictionaries, when available.
 
-###### Synonyms ######
+##### Synonyms #####
 
 When available, the extension will also show some synonyms for the canonical form of the word selected. This way you can get a better sense of the word and it's usage. 
 
-###### Error Handling ######
+##### Error Handling #####
 
 Man I hate it when bogus happens. But sometimes it does. And we can't stop it. Period. What we can do is be aware of it, keep calm and don't throw pianos out through the window. 
 
@@ -53,4 +53,5 @@ The extension uses the [Wordnik API](http://developer.wordnik.com/docs.html) to 
 ### TODO ###
 
 *   display spinner while loading
+*   use colored fonts for debugging messages 
 *   let the user manually change the word

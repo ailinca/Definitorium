@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         word = response.text;
         console.log('Selected word: ' + word);
         clearPopup();
-        getCanonicalDefinition(word);
+        getDefinitions(word);
         getSynonyms(word);
     });
 
@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(handleFetchError);
     };
 
-    const getCanonicalDefinition = (word) => {
+    const getDefinitions = (word) => {
         const fetchParams = {
             useCanonical: true,
             limit: DEFINITIONS_LIMIT,
