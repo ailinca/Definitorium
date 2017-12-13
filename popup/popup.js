@@ -38,8 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // tell the background script the popup is ready and get the word selected by the user
     chrome.runtime.sendMessage({text: "popupReady"}, response => {
-        console.log(response);
         word = response.text;
+        console.log('Selected word: ' + word);
         clearPopup();
         getCanonicalDefinition(word);
         getSynonyms(word);
@@ -47,7 +47,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // get needed DOM elements
-    const {userDefinition, errorMessage, canonicalDefinitionIntro, canonicalDefinition, synonymsIntro, synonymsElement} = initialize();
+    const {
+        userDefinition,
+        errorMessage,
+        canonicalDefinitionIntro,
+        canonicalDefinition,
+        synonymsIntro,
+        synonymsElement
+    } = initialize();
 
     // instantiate helper functions
     const clearError = () => {
@@ -100,12 +107,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // display the definitions for the exact word selected by the user
     const displayOriginalDefinition = (response) => {
-        console.log(`Literal definition is ${response[0].text}`);
+        console.log(`Literal definition is: ${response[0].text}`);
         userDefinition.innerHTML += `${response[0].word} =`;
         response.map((resp, index) => appendDefinition(userDefinition, resp.text, index + 1));
     };
 
-    const getOriginalDefinition = (word, responseCanonical = []) => {
+    const getOriginalDefinition = (responseCanonical = []) => {
         const fetchParams = {
             useCanonical: false,
             limit: DEFINITIONS_LIMIT,
@@ -121,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const handleFailedOriginalDefinitionRequest = (response, responseCanonical) => {
             return new Promise((resolve, reject) => {
-                console.log(response);
                 if (response.status !== 200) {
                     // if this call didn't succeed just display the canonical definition but don't show any error message to the user
                     if (responseCanonical.length) {
@@ -138,7 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const handleSuccessfulOriginalDefinitionRequest = (data, responseCanonical) => {
             return new Promise((resolve, reject) => {
-                console.log(data);
                 if (data.length) {
                     displayOriginalDefinition(data);
                     if (responseCanonical.length) {
@@ -158,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Marvelous piece of code, should be framed in the JS museum one day
         fetch(urlWithoutCanonical)
-            .then(responseWithoutCanonical => handleFailedOriginalDefinitionRequest(responseWithoutCanonical,responseCanonical))
+            .then(responseWithoutCanonical => handleFailedOriginalDefinitionRequest(responseWithoutCanonical, responseCanonical))
             .then(response => response.json())
             .then(data => handleSuccessfulOriginalDefinitionRequest(data, responseCanonical))
             .catch(handleFetchError);
@@ -181,7 +186,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const handleFailedCanonicalDefinitionRequest = response => {
             return new Promise((resolve, reject) => {
-                console.log(response);
                 if (response.status !== 200) {
                     console.warn(`${ERROR_MESSAGES.SERVER_ERROR} Status Code: ${response.status}`);
                     showError(ERROR_MESSAGES.SERVER_ERROR);
@@ -193,15 +197,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const handleSuccessfulCanonicalDefinitionRequest = data => {
             return new Promise ((resolve, reject) => {
-                console.log(data);
+                console.log('ENTERED HANDLE SUCCESSFUL CANONICAL DEFINITION REQUEST');
                 if (data.length) {
                     // check if the definition returned is for the same word or a derived one
+                    console.log('Comparing ' + data[0].word.toLowerCase() + ' with ' + word.toLowerCase());
                     if (data[0].word.toLowerCase() === word.toLowerCase()) {
                         displayCanonicalDefinition(data);
-                        resolve('Word is in the canonical form, found definitions for it, no need for the original definition fetch!');
                     } else {
-                        getOriginalDefinition(word, data);
-                        resolve('Word is NOT in the canonical form, getting original definition, stand by...');
+                        // getOriginalDefinition(word, data);
+                        console.log('They are not equal, resolving promise with second param of resolve: ');
+                        resolve(data);
                     }
                 } else {
                     console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
@@ -216,6 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(handleFailedCanonicalDefinitionRequest)
             .then(response => response.json())
             .then(handleSuccessfulCanonicalDefinitionRequest)
+            .then(getOriginalDefinition)
             .catch(handleFetchError)
     };
 
@@ -253,7 +259,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const handleSuccessfulSynonymsRequest = data => {
             return new Promise((resolve, reject) => {
-                console.log(data);
                 if (data.length && data[0].words.length) {
                     displaySynonymsWithIntro(data[0].words);
                     resolve('Successfully obtained synonyms, displaying them now!');
