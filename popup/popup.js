@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // add the canonical word and ALL it's definitions
     const displayCanonicalDefinition = (response) => {
-        console.log(`Canonical definition is:${response[0].text}`);
+        console.log(`Canonical definition is: ${response[0].text}`);
         canonicalDefinition.innerHTML += `${response[0].word} =`;
         response.map((resp, index) => appendDefinition(canonicalDefinition, resp.text, index + 1));
     };
@@ -119,8 +119,9 @@ document.addEventListener("DOMContentLoaded", () => {
             params: fetchParams
         });
 
-        fetch(urlWithoutCanonical)
-            .then(response => {
+        const handleFailedOriginalDefinitionRequest = (response, responseCanonical) => {
+            return new Promise((resolve, reject) => {
+                console.log(response);
                 if (response.status !== 200) {
                     // if this call didn't succeed just display the canonical definition but don't show any error message to the user
                     if (responseCanonical.length) {
@@ -129,24 +130,37 @@ document.addEventListener("DOMContentLoaded", () => {
                         showError(ERROR_MESSAGES.SERVER_ERROR);
                     }
                     console.warn(`${ERROR_MESSAGES.SERVER_ERROR} Status Code: ${response.status}`);
-                    return;
+                    reject(response);
                 }
-                response.json()
-                    .then(data => {
-                        console.log(data);
-                        if (data.length) {
-                            displayOriginalDefinition(data);
-                            if (responseCanonical.length) {
-                                displayCanonicalDefinitionIntro(responseCanonical[0].word);
-                                displayCanonicalDefinition(responseCanonical);
-                            }
-                        } else {
-                            // again, don't let the user know we don't have a definition for him, just log to the console and display the canonical definition
-                            displayCanonicalDefinition(responseCanonical);
-                            console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
-                        }
-                    });
-            })
+                resolve(response);
+            });
+        };
+
+        const handleSuccessfulOriginalDefinitionRequest = (data, responseCanonical) => {
+            return new Promise((resolve, reject) => {
+                console.log(data);
+                if (data.length) {
+                    displayOriginalDefinition(data);
+                    if (responseCanonical.length) {
+                        displayCanonicalDefinitionIntro(responseCanonical[0].word);
+                        displayCanonicalDefinition(responseCanonical);
+                        resolve('Successfully found both original definition AND canonical form!');
+                    }
+                    resolve('Successfully found original definition but NO definition was found for the canonical form!');
+                } else {
+                    // again, don't let the user know we don't have a definition for him, just log to the console and display the canonical definition
+                    displayCanonicalDefinition(responseCanonical);
+                    console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
+                    reject('Successfully found definition for the canonical form but NO definition for the original word!');
+                }
+            });
+        };
+
+        // Marvelous piece of code, should be framed in the JS museum one day
+        fetch(urlWithoutCanonical)
+            .then(responseWithoutCanonical => handleFailedOriginalDefinitionRequest(responseWithoutCanonical,responseCanonical))
+            .then(response => response.json())
+            .then(data => handleSuccessfulOriginalDefinitionRequest(data, responseCanonical))
             .catch(handleFetchError);
     };
 
@@ -158,37 +172,50 @@ document.addEventListener("DOMContentLoaded", () => {
             includeTags: false,
             api_key: API.KEY
         };
+
         const urlWithCanonical = createUrl({
             wordToSearch: word,
             endpoint: API.ENDPOINTS.DEFINITIONS,
             params: fetchParams
         });
 
-        fetch(urlWithCanonical)
-            .then(response => {
+        const handleFailedCanonicalDefinitionRequest = response => {
+            return new Promise((resolve, reject) => {
+                console.log(response);
                 if (response.status !== 200) {
                     console.warn(`${ERROR_MESSAGES.SERVER_ERROR} Status Code: ${response.status}`);
                     showError(ERROR_MESSAGES.SERVER_ERROR);
-                    return;
+                    reject(response);
                 }
-                // Examine the text in the response
-                response.json()
-                    .then(data => {
-                        console.log(data);
-                        if (data.length) {
-                            // check if the definition returned is for the same word or a derived one
-                            if (data[0].word.toLowerCase() === word.toLowerCase()) {
-                                displayCanonicalDefinition(data)
-                            } else {
-                                getOriginalDefinition(word, data);
-                            }
+                resolve(response);
+            });
+        };
 
-                        } else {
-                            console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
-                            showError(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
-                        }
-                    });
+        const handleSuccessfulCanonicalDefinitionRequest = data => {
+            return new Promise ((resolve, reject) => {
+                console.log(data);
+                if (data.length) {
+                    // check if the definition returned is for the same word or a derived one
+                    if (data[0].word.toLowerCase() === word.toLowerCase()) {
+                        displayCanonicalDefinition(data);
+                        resolve('Word is in the canonical form, found definitions for it, no need for the original definition fetch!');
+                    } else {
+                        getOriginalDefinition(word, data);
+                        resolve('Word is NOT in the canonical form, getting original definition, stand by...');
+                    }
+                } else {
+                    console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
+                    showError(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
+                    reject('No canonical definition found, aborting everything, going home!')
+                }
             })
+        };
+
+        // This code is just pure gold, I can't believe I though of this ** self pat on the back **
+        fetch(urlWithCanonical)
+            .then(handleFailedCanonicalDefinitionRequest)
+            .then(response => response.json())
+            .then(handleSuccessfulCanonicalDefinitionRequest)
             .catch(handleFetchError)
     };
 
@@ -200,33 +227,49 @@ document.addEventListener("DOMContentLoaded", () => {
             relationshipTypes: "synonym",
             api_key: API.KEY
         };
-        const url = createUrl({wordToSearch: word, endpoint: API.ENDPOINTS.RELATED_WORDS, params: fetchParams});
-        console.log('URL for getting synonyms: ' + url);
-        fetch(url)
-            .then(response => {
+
+        const url = createUrl({
+            wordToSearch: word,
+            endpoint: API.ENDPOINTS.RELATED_WORDS,
+            params: fetchParams
+        });
+
+        const handleFailedSynonymsRequest = response => {
+            return new Promise((resolve, reject) => {
                 if (response.status !== 200) {
                     console.warn(`${ERROR_MESSAGES.SERVER_ERROR} Status Code: ${response.status}`);
                     showError(ERROR_MESSAGES.SERVER_ERROR);
-                    return;
+                    reject(response);
                 }
-
-                response.json()
-                    .then(data => {
-                        console.log(data);
-                        if (data.length && data[0].words.length) {
-                            const synonyms = data[0].words;
-                            console.log(`Synonyms for the canonical form of ${word} are:`);
-                            console.log(synonyms);
-
-                            synonymsIntro.innerHTML = "Synonyms:";
-                            synonyms.map(syn => synonymsElement.innerHTML += `${syn}, `);
-
-                        } else {
-                            console.warn(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}"${word}"`);
-                            showError(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}`);
-                        }
-                    });
+                resolve(response);
             })
+        };
+
+        const displaySynonymsWithIntro = synonyms => {
+            console.log(`Synonyms for the canonical form are: ${synonyms.join()}`);
+            synonymsIntro.innerHTML = "Synonyms:";
+            synonyms.map(syn => synonymsElement.innerHTML += `${syn}, `);
+        };
+
+        const handleSuccessfulSynonymsRequest = data => {
+            return new Promise((resolve, reject) => {
+                console.log(data);
+                if (data.length && data[0].words.length) {
+                    displaySynonymsWithIntro(data[0].words);
+                    resolve('Successfully obtained synonyms, displaying them now!');
+                } else {
+                    console.warn(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}"${word}"`);
+                    showError(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}`);
+                    reject('Did not obtain any synonyms, we sad puppies!');
+                }
+            })
+        };
+
+        // This is coding orgasm right here, you can't get any better than this next 5 lines
+        fetch(url)
+            .then(handleFailedSynonymsRequest)
+            .then(response => response.json())
+            .then(handleSuccessfulSynonymsRequest)
             .catch(handleFetchError)
     };
 });
