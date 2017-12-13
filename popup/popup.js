@@ -169,6 +169,14 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(handleFetchError);
     };
 
+    /*
+        Start point for the fetch definitions logic
+        We first request definitions using the "useCanonical" flag set to true.
+        This way, we can compare the original word with the one in the response and find out if it's in a canonical form.
+        If it's not, we request the definition with the "useCanonical" flag set to false.
+        Depending on the responses, we display either the original word with it's definitions, either the canonical form, either both.
+        Or none. Could be none.
+    */
     const getDefinitions = (word) => {
         const fetchParams = {
             useCanonical: true,
