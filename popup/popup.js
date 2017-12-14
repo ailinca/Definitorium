@@ -205,10 +205,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const handleSuccessfulCanonicalDefinitionRequest = data => {
             return new Promise ((resolve, reject) => {
-                console.log('ENTERED HANDLE SUCCESSFUL CANONICAL DEFINITION REQUEST');
                 if (data.length) {
                     // check if the definition returned is for the same word or a derived one
-                    console.log('Comparing ' + data[0].word.toLowerCase() + ' with ' + word.toLowerCase());
                     if (data[0].word.toLowerCase() === word.toLowerCase()) {
                         displayCanonicalDefinition(data);
                     } else {

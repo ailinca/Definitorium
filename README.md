@@ -50,6 +50,18 @@ If something bad happens, let's say the server is down because of a hurracane or
 The extension uses the [Wordnik API](http://developer.wordnik.com/docs.html) to fetch definitions. 
 
 
+### How To Use ###
+
+Before the extension will be deployed on Chrome and Mozilla stores, you can play with it in developer mode:
+
+* checkout the master branch of this repo: `` git checkout https://github.com/ailinca/Definitorium.git``
+* Go to Chrome and enter _chrome://extensions_ in the search bar
+* Thick the _Developer mode_ checkbox at the top of the page
+* Hit _Load unpacked extension_ 
+* Select the parent folder of the project 
+* Navigate to any page, select a word and press the Definito
+* Be amazed
+
 ### TODO ###
 
 *   display spinner while loading
