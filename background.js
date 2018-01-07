@@ -1,6 +1,20 @@
-console.log('Logging from the background script!');
+const titleCSS = "text-shadow: " +
+    "-1px -1px hsl(0,100%,50%)," +
+    "23px 13px hsl(70.2, 100%, 50%), " +
+    "25px 14px hsl(75.6, 100%, 50%), " +
+    "27px 15px hsl(81, 100%, 50%), " +
+    "28px 16px hsl(86.4, 100%, 50%), " +
+    "30px 17px hsl(91.8, 100%, 50%), " +
+    "32px 18px hsl(97.2, 100%, 50%), " +
+    "33px 19px hsl(102.6, 100%, 50%), " +
+    "35px 20px hsl(108, 100%, 50%), " +
+    "36px 21px hsl(113.4, 100%, 50%), " +
+    "38px 22px hsl(118.8, 100%, 50%), " +
+    "39px 23px hsl(124.2, 100%, 50%); " +
+    "font-size: 40px;";
+console.log('%cLogging from the background script!', titleCSS);
 
-let wordToSearch = 'defaultWord';
+let wordToSearch = 'placeholder';
 
 // message handler => either save the word received from the content script or send it to the popup when requested
 const messageReceived = (message, sender, sendResponse) => {

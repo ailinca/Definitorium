@@ -1,4 +1,19 @@
-console.log('logging from the popup console!!');
+const titleCSS = "" +
+    "text-shadow: -1px -1px hsl(0,100%,50%), " +
+    "1px 1px hsl(5.4, 100%, 50%), " +
+    "3px 2px hsl(10.8, 100%, 50%), " +
+    "5px 3px hsl(16.2, 100%, 50%), " +
+    "7px 4px hsl(21.6, 100%, 50%), " +
+    "9px 5px hsl(27, 100%, 50%), " +
+    "11px 6px hsl(32.4, 100%, 50%), " +
+    "13px 7px hsl(37.8, 100%, 50%), " +
+    "14px 8px hsl(43.2, 100%, 50%), " +
+    "16px 9px hsl(48.6, 100%, 50%), " +
+    "18px 10px hsl(54, 100%, 50%), " +
+    "20px 11px hsl(59.4, 100%, 50%), " +
+    "22px 12px hsl(64.8, 100%, 50%); " +
+    "font-size: 40px;";
+console.log("%cLogging from the popup console!!", titleCSS);
 
 //global variable
 let word = "placeholder";
@@ -11,6 +26,13 @@ const API = {
         DEFINITIONS: 'definitions',
         RELATED_WORDS: 'relatedWords'
     }
+};
+
+const LOGS_CSS = {
+    SELECTED_WORD: "font-size: 20px; color: pink;",
+    CANONICAL: "font-size: 20px; color: blue;",
+    ORIGINAL: "font-size: 20px; color: green;",
+    SYNONYMS: "font-size: 20px; color: yellow;"
 };
 
 const ERROR_MESSAGES = {
@@ -39,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // tell the background script the popup is ready and get the word selected by the user
     chrome.runtime.sendMessage({text: "popupReady"}, response => {
         word = response.text;
-        console.log('Selected word: ' + word);
+        console.log('%cSelected word: ' + word, LOGS_CSS.SELECTED_WORD);
         clearPopup();
         getDefinitions(word);
         getSynonyms(word);
@@ -100,14 +122,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // add the canonical word and ALL it's definitions
     const displayCanonicalDefinition = (response) => {
-        console.log(`Canonical definition is: ${response[0].text}`);
+        console.log(`%cCanonical definition is: ${response[0].text}`, LOGS_CSS.CANONICAL);
         canonicalDefinition.innerHTML += `${response[0].word} =`;
         response.map((resp, index) => appendDefinition(canonicalDefinition, resp.text, index + 1));
     };
 
     // display the definitions for the exact word selected by the user
     const displayOriginalDefinition = (response) => {
-        console.log(`Literal definition is: ${response[0].text}`);
+        console.log(`%cLiteral definition is: ${response[0].text}`, LOGS_CSS.ORIGINAL);
         userDefinition.innerHTML += `${response[0].word} =`;
         response.map((resp, index) => appendDefinition(userDefinition, resp.text, index + 1));
     };
@@ -258,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         const displaySynonymsWithIntro = synonyms => {
-            console.log(`Synonyms for the canonical form are: ${synonyms.join()}`);
+            console.log(`%cSynonyms for the canonical form are: ${synonyms.join()}`, LOGS_CSS.SYNONYMS);
             synonymsIntro.innerHTML = "Synonyms:";
             synonyms.map(syn => synonymsElement.innerHTML += `${syn}, `);
         };

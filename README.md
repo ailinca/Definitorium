@@ -65,5 +65,6 @@ Before the extension will be deployed on Chrome and Mozilla stores, you can play
 ### TODO ###
 
 *   display spinner while loading
+*   create a logging mechanism using ES6 Proxy
 *   use colored fonts for debugging messages 
 *   let the user manually change the word
