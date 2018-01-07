@@ -12,7 +12,7 @@ For those kind of moments, there is **Definitorium**.
 
 **Definitorium** is a Chrome extension, soon to be available in the [Chrome Extension Store](https://chrome.google.com/webstore/category/extensions), which gives you the  definition you need for that stubborn word you stopped at, without you leaving the page or doing any kind of spiritual incantation. 
 
-All you have to do is select the word and then click the **Definitorium** icon and that's it! You have your definition right there !
+All you have to do is to select the word and then click the **Definitorium** icon and that's it! You have your definition right there !
  
 
 Hurray ! 
@@ -40,9 +40,9 @@ When available, the extension will also show some synonyms for the canonical for
 
 ##### Error Handling #####
 
-Man I hate it when bogus happens. But sometimes it does. And we can't stop it. Period. What we can do is be aware of it, keep calm and don't throw pianos out through the window. 
+Man, I hate it when bogus happens. But sometimes it does. And we can't stop it. Period. What we can do is be aware of it, keep calm and don't throw pianos out through the window. 
 
-If something bad happens, let's say the server is down because of a hurracane or you selected a bunch of letters with no meaning because you wanted to #hackthesystem or simply no definitions were found.... **We will tell you!** You won't be left hanging, not knowing anything, looking at a blank screen, contemplating the futility of existence. We care about you. 
+If something bad happens, let's say the server is down because of a hurricane or you selected a bunch of letters with no meaning because you wanted to _#hackthesystem_ or simply no definitions were found.... **We will tell you!** You won't be left hanging, not knowing anything, looking at a blank screen, contemplating the futility of existence. We care about you. 
 
 
 ### Details ### 
@@ -61,10 +61,3 @@ Before the extension will be deployed on Chrome and Mozilla stores, you can play
 * Select the parent folder of the project 
 * Navigate to any page, select a word and press the Definitorium icon
 * Be amazed
-
-### TODO ###
-
-*   display spinner while loading
-*   create a logging mechanism using ES6 Proxy
-*   use colored fonts for debugging messages 
-*   let the user manually change the word
