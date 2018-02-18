@@ -12,6 +12,7 @@ const titleCSS = "text-shadow: " +
     "38px 22px hsl(118.8, 100%, 50%), " +
     "39px 23px hsl(124.2, 100%, 50%); " +
     "font-size: 40px;";
+
 console.log('%cLogging from the background script!', titleCSS);
 
 let wordToSearch = 'placeholder';
