@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const showError = (error) => {
         errorMessage.innerHTML = error;
-        errorMessage.style.display = 'inline-block';
+        errorMessage.style.display = 'block';
     };
 
     const fetchParams = function (params) {
@@ -308,6 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     console.warn(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}"${word}"`);
                     showError(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}`);
+                    errorMessage.innerHTML += `<img width="388px" src="../assets/cookie.png"/>`;
                     reject('Did not obtain any synonyms, we sad puppies!');
                 }
             })
