@@ -1,7 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Definitorium",
-  "version": "2.0",
+  "short_name": "Definy",
+  "version": "0.2",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -13,8 +14,12 @@
   },
   "permissions": ["tabs"],
   "browser_action": {
-    "default_icon" : "assets/definitorium_icon.png",
-    "default_title": "Definitions will be here",
+    "default_icon" : "assets/128.png",
+    "default_title": "Definitorium",
     "default_popup": "popup/popup.html"
+  },
+  "icons": {
+    "128": "assets/128.png",
+    "64": "assets/64.png"
   }
 }
