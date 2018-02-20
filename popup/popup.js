@@ -13,6 +13,7 @@ const titleCSS = "" +
     "20px 11px hsl(59.4, 100%, 50%), " +
     "22px 12px hsl(64.8, 100%, 50%); " +
     "font-size: 40px;";
+
 console.log("%cLogging from the popup console!!", titleCSS);
 
 //global variable
@@ -49,6 +50,7 @@ const initialize = () => {
     return {
         userDefinition: document.getElementById('user-definition'),
         errorMessage: document.getElementById('error-message'),
+        spinner: document.getElementById('spinner'),
         canonicalDefinitionIntro: document.getElementById('canonical-definition-intro'),
         canonicalDefinition: document.getElementById('canonical-definition'),
         synonymsIntro: document.getElementById('synonyms-intro'),
@@ -72,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const {
         userDefinition,
         errorMessage,
+        spinner,
         canonicalDefinitionIntro,
         canonicalDefinition,
         synonymsIntro,
@@ -93,9 +96,13 @@ document.addEventListener("DOMContentLoaded", () => {
         clearError();
     };
 
+    const toggleSpinner = (show) => {
+        spinner.style.display = show ? 'block' : 'none';
+    };
+
     const showError = (error) => {
         errorMessage.innerHTML = error;
-        errorMessage.style.display = 'inline-block';
+        errorMessage.style.display = 'block';
     };
 
     const fetchParams = function (params) {
@@ -113,7 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
         selector.innerHTML += ` ${index}. ${def} \n`;
     };
 
-    const handleFetchError = err => console.log('Fetch Error :-S', err);
+    const handleFetchError = err => {
+        toggleSpinner(false);
+        console.log('Fetch Error :-S', err);
+    };
 
     // add a specific message to indicate that there might be a more useful definition available
     const displayCanonicalDefinitionIntro = (word) => {
@@ -151,6 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const handleFailedOriginalDefinitionRequest = (response, responseCanonical) => {
             return new Promise((resolve, reject) => {
                 if (response.status !== 200) {
+                    toggleSpinner(false);
                     // if this call didn't succeed just display the canonical definition but don't show any error message to the user
                     if (responseCanonical.length) {
                         displayCanonicalDefinition(responseCanonical);
@@ -166,6 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const handleSuccessfulOriginalDefinitionRequest = (data, responseCanonical) => {
             return new Promise((resolve, reject) => {
+                toggleSpinner(false);
                 if (data.length) {
                     displayOriginalDefinition(data);
                     if (responseCanonical.length) {
@@ -200,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
         Or none. Could be none.
     */
     const getDefinitions = (word) => {
+
         const fetchParams = {
             useCanonical: true,
             limit: DEFINITIONS_LIMIT,
@@ -217,6 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const handleFailedCanonicalDefinitionRequest = response => {
             return new Promise((resolve, reject) => {
                 if (response.status !== 200) {
+                    toggleSpinner(false);
                     console.warn(`${ERROR_MESSAGES.SERVER_ERROR} Status Code: ${response.status}`);
                     showError(ERROR_MESSAGES.SERVER_ERROR);
                     reject(response);
@@ -230,13 +244,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.length) {
                     // check if the definition returned is for the same word or a derived one
                     if (data[0].word.toLowerCase() === word.toLowerCase()) {
+                        toggleSpinner(false);
                         displayCanonicalDefinition(data);
                     } else {
-                        // getOriginalDefinition(word, data);
                         console.log('They are not equal, resolving promise with second param of resolve: ');
                         resolve(data);
                     }
                 } else {
+                    toggleSpinner(false);
                     console.warn(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
                     showError(`${ERROR_MESSAGES.DEFINITIONS_NOT_FOUND}"${word}"`);
                     reject('No canonical definition found, aborting everything, going home!')
@@ -293,6 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     console.warn(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}"${word}"`);
                     showError(`${ERROR_MESSAGES.SYNONYMS_NOT_FOUND}`);
+                    errorMessage.innerHTML += `<img width="388px" src="../assets/cookie.png"/>`;
                     reject('Did not obtain any synonyms, we sad puppies!');
                 }
             })

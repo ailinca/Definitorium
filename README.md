@@ -1,7 +1,15 @@
 # Definitorium
+
+Version 0.5
+
 Chrome extension for getting definitions
 
-### Overview ###
+* [Overview](#overview)
+* [Features](#features)
+* [Implementation](#implementation)
+* [How to use](#how-to-use)
+
+### Overview <a id="overview"></a> ###
 Isn't it annoying when you find a word you don't know in a delightful article or a nice book and you have to copy it, open another tab, paste it, pray to gods Google understands what you meant and find it's definition? If the gods are not in a good day, you must then open the [Cambridge English Dictionary](https://dictionary.cambridge.org/) paste it there and find what you need THEN go back to the original page and resume your reading. 
 
 ...or, (if you're lazy like me) try to figure out the meaning from the context.
@@ -10,14 +18,14 @@ But that doesn't always work.
 
 For those kind of moments, there is **Definitorium**.
 
-**Definitorium** is a Chrome extension, soon to be available in the [Chrome Extension Store](https://chrome.google.com/webstore/category/extensions), which gives you the  definition you need for that stubborn word you stopped at, without you leaving the page or doing any kind of spiritual incantation. 
+**Definitorium** is a Chrome extension, available in the [Chrome Extension Store](https://chrome.google.com/webstore/detail/definitorium/fmfmlbniffpmlmnddheggpgdmoklpkja), which gives you the  definition you need for that stubborn word you stopped at, without you leaving the page or doing any kind of spiritual incantation. 
 
 All you have to do is to select the word and then click the **Definitorium** icon and that's it! You have your definition right there !
  
 
 Hurray ! 
 
-### Features ### 
+### Features <a id="features"></a> ### 
 
 ##### Recognising canonical form #####
 
@@ -45,14 +53,20 @@ Man, I hate it when bogus happens. But sometimes it does. And we can't stop it. 
 If something bad happens, let's say the server is down because of a hurricane or you selected a bunch of letters with no meaning because you wanted to _#hackthesystem_ or simply no definitions were found.... **We will tell you!** You won't be left hanging, not knowing anything, looking at a blank screen, contemplating the futility of existence. We care about you. 
 
 
-### Details ### 
+### Implementation <a id="implementation"></a> ### 
 
-The extension uses the [Wordnik API](http://developer.wordnik.com/docs.html) to fetch definitions. 
+The extension uses the [Wordnik API](http://developer.wordnik.com/docs.html) to fetch definitions and synonyms.
 
 
-### How To Use ###
+### How To Use <a id="how-to-use"></a> ###
 
-Before the extension will be deployed on Chrome and Mozilla stores, you can play with it in developer mode:
+##### User mode:
+
+* install the extension directly from the [Chrome Web Store](https://chrome.google.com/webstore/detail/definitorium/fmfmlbniffpmlmnddheggpgdmoklpkja) (**it's free**) 
+* navigate to a new tab or refresh an existing one
+* select a word with and hit the Definitorium icon 
+
+##### Developer mode:
 
 * Checkout the master branch of this repo: `` git checkout https://github.com/ailinca/Definitorium.git``
 * Go to Chrome and enter _chrome://extensions_ in the search bar
