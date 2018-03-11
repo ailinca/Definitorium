@@ -5,8 +5,8 @@ Version 0.5
 Chrome extension for getting definitions
 
 * [Overview](#overview)
+* [Inspiration](#inspiration)
 * [Features](#features)
-* [Implementation](#implementation)
 * [How to use](#how-to-use)
 
 ### Overview <a id="overview"></a> ###
@@ -24,6 +24,12 @@ All you have to do is to select the word and then click the **Definitorium** ico
  
 
 Hurray ! 
+
+### Inspiration <a id="inspiration"></a> ###
+
+This extension was inspired by Daniel Shiffman's Youtube series about Chrome extensions, which you can find [here](https://www.youtube.com/watch?v=hkOTAmmuv_4&list=PLRqwX-V7Uu6bL9VOMT65ahNEri9uqLWfS). He has lots of interesting videos about programming, coding challenges, tutorials and much more on his channel, [The Coding Train](https://www.youtube.com/channel/UCvjgXvBlbQiydffZU7m1_aw).
+
+Also, you can find his implementation of the Chrome extension that fetches definitions on his [Github page](https://github.com/CodingTrain/website/tree/master/CodingChallenges/CC_84_Word_Definition_Extension).
 
 ### Features <a id="features"></a> ### 
 
@@ -51,11 +57,6 @@ When available, the extension will also show some synonyms for the canonical for
 Man, I hate it when bogus happens. But sometimes it does. And we can't stop it. Period. What we can do is be aware of it, keep calm and don't throw pianos out through the window. 
 
 If something bad happens, let's say the server is down because of a hurricane or you selected a bunch of letters with no meaning because you wanted to _#hackthesystem_ or simply no definitions were found.... **We will tell you!** You won't be left hanging, not knowing anything, looking at a blank screen, contemplating the futility of existence. We care about you. 
-
-
-### Implementation <a id="implementation"></a> ### 
-
-The extension uses the [Wordnik API](http://developer.wordnik.com/docs.html) to fetch definitions and synonyms.
 
 
 ### How To Use <a id="how-to-use"></a> ###
