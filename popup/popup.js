@@ -21,7 +21,7 @@ let word = "placeholder";
 
 // constants area
 const API = {
-    KEY: 'a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
+    KEY: '1385e6443a1d02168b00f0d74cb0d6cfbbfe06c59c9d375a1',
     BASE_URL: 'http://api.wordnik.com:80/v4/word.json',
     ENDPOINTS: {
         DEFINITIONS: 'definitions',
